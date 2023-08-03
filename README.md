@@ -6,17 +6,25 @@ First of all create .env file in both client and server individually with the he
 
 Replace the API Keys of OpenAi in server folder and Eleven Labs in client folder
 
-Commands to run --
+Make sure your npm and node version are up to date
 
-npm init in both server and client
+
+Commands to run in client --
+
+npm init -y
+npm i react-speech-recognition
+
+
+Commands to run in server --
+
+npm init -y
+npm i nodemon node-fetch cors dotenv
+
 
 for starting the server - 
 npm run dev
+server will run on 8000 port
 
 for starting the client - 
 npm start
-
-make sure you have these packages installed - 
-nodemon
-node-fetch
-react-speech-recognition
+client will run on 3000 port
