@@ -133,7 +133,7 @@ async def process_chat(messages: List[dict]):
             json=data,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer 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"
+                "Authorization": f"Bearer ${OPEN_API_KEY}"
             }
         )
 
@@ -164,7 +164,7 @@ async def generate_title(title: str):
                 json=data,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": f"Bearer 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"
+                    "Authorization": f"Bearer ${OPEN_API_KEY}"
                 }
             )
 
