@@ -41,7 +41,6 @@ app.post("/api/chat", async (req, res) => {
       }),
     });
 
-    
     response.body.on("data", (data) => {
       const lines = data
         .toString()
@@ -51,11 +50,9 @@ app.post("/api/chat", async (req, res) => {
         const message = line.replace(/^data: /, "");
         console.log(message, "message");
 
-        if (message === '[DONE]') {
+        if (message === "[DONE]") {
           return res.end();
         }
-
-
 
         const { choices } = JSON.parse(message);
         const { content } = choices[choices.length - 1].delta || {};
@@ -63,7 +60,6 @@ app.post("/api/chat", async (req, res) => {
         if (content) {
           res.write(content);
         }
-
       }
     });
   } catch (error) {
@@ -72,9 +68,7 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.post("/api/title", async (req, res) => {
-
   try {
-    
     const { title } = req.body;
 
     const response = await fetch("https://api.openai.com/v1/completions", {
@@ -93,17 +87,12 @@ app.post("/api/title", async (req, res) => {
     });
 
     const data = await response.json();
-    // console.log(data, 'data');
     res.status(200).json({ title: data?.choices?.[0]?.text });
-
   } catch (error) {
-    console.log(error, "Error in getting Title")
+    console.log(error, "Error in getting Title");
     res.status(500).json({ error: "Error in getting Title" });
   }
-
-  
-
-})
+});
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

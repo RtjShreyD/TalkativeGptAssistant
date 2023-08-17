@@ -4,6 +4,7 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import AudioPlayer from "../components/AudioPlayer";
+import preDef from "../Audio/please wsit.mp3";
 
 const tds = {
   start() {
@@ -54,7 +55,6 @@ const Chat = () => {
 
   const { transcript, listening, resetTranscript } = useSpeechRecognition();
 
-
   const startListening = useCallback(() => {
     SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
     console.log("start listening");
@@ -68,93 +68,115 @@ const Chat = () => {
     // resetTranscript(); // clear the text in microphone after recording is done
   }, [transcript]);
 
-  const handleSend = useCallback(
-    async () => {
-      if (input.trim()) {
-        setChat([...userChat, { role: "user", content: input }]);
-        setInput("");
-        resetTranscript();
-        const response = await fetch("http://localhost:8000/api/chat", {
+  const handleSend = useCallback(async () => {
+    if (input.trim()) {
+      setChat([...userChat, { role: "user", content: input }]);
+      setInput("");
+      resetTranscript();
+      const response = await fetch("http://localhost:8000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            ...userChat,
+            {
+              role: "user",
+              content: input,
+            },
+          ],
+        }),
+      });
+
+      // Get the audio URL from AudioPlayer
+      let def = new Audio(preDef);
+      // Play the default audio in a loop
+      let fetchComplete = false;
+
+      // Function to play the default audio in a loop with a delay
+      function playDefaultAudioLoop() {
+        def.currentTime = 0;
+        def.play();
+        setTimeout(() => {
+          if (!fetchComplete) {
+            playDefaultAudioLoop();
+          }
+        }, 5000); // 2 seconds
+      }
+
+      // Play the default audio loop
+      playDefaultAudioLoop();
+      // Show typing effect while waiting for the audio URL
+      setChat([
+        ...userChat,
+        { role: "user", content: input },
+        { role: "assistant", content: "Loading..." },
+      ]);
+
+      const readData = response.body
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
+      let aiRes = "";
+
+      console.log(readData);
+
+      while (true) {
+        const { done, value } = await readData.read();
+        if (done) {
+          break;
+        }
+        aiRes += value;
+      }
+
+      // Delay before calling the AudioPlayer to simulate typing effect
+      const typingDelay = 30; // 0.1 second delay (adjust as needed)
+
+      const audioUrl = await AudioPlayer(aiRes);
+      const audio = new Audio(audioUrl);
+
+      // Fetch the audioUrl asynchronously
+      AudioPlayer(aiRes)
+        .then((audioUrl) => {
+          if (audioUrl) {
+            fetchComplete = true;
+            // If audioUrl is fetched, switch to playing the fetched audio
+            audio.src = audioUrl;
+            def.pause(); // Pause the default audio loop
+            audio.play();
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching audioUrl:", error);
+        });
+
+      for (let i = 0; i < aiRes.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, typingDelay));
+        const partialAIRes = aiRes.substring(0, i + 1);
+        setChat([
+          ...userChat,
+          { role: "user", content: input },
+          { role: "assistant", content: partialAIRes },
+        ]);
+      }
+
+      if (!title) {
+        const createTitle = await fetch("http://localhost:8000/api/title", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages: [
-              ...userChat,
-              {
-                role: "user",
-                content: input,
-              },
-            ],
+            title: input,
           }),
         });
 
-        // Show typing effect while waiting for the audio URL
-        setChat([
-          ...userChat,
-          { role: "user", content: input },
-          { role: "assistant", content: "Loading..." },
-        ]);
-
-        const readData = response.body
-          .pipeThrough(new TextDecoderStream())
-          .getReader();
-        let aiRes = "";
-
-        console.log(readData);
-
-        while (true) {
-          const { done, value } = await readData.read();
-          if (done) {
-            break;
-          }
-          aiRes += value;
-
-        }
-
-        // Delay before calling the AudioPlayer to simulate typing effect
-        const typingDelay = 30; // 0.1 second delay (adjust as needed)
-
-        // Get the audio URL from AudioPlayer
-        const audioUrl = await AudioPlayer(aiRes);
-
-        const audio = new Audio(audioUrl);
-        audio.play();
-        
-        for (let i = 0; i < aiRes.length; i++) {
-          await new Promise((resolve) => setTimeout(resolve, typingDelay));
-          const partialAIRes = aiRes.substring(0, i + 1);
-          setChat([
-            ...userChat,
-            { role: "user", content: input },
-            { role: "assistant", content: partialAIRes },
-          ]);
-        }
-
-        if (!title) {
-          const createTitle = await fetch("http://localhost:8000/api/title", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              title: input,
-            }),
-          });
-
-          const title = await createTitle.json();
-          setTitle(title?.title);
-          setchatHistory([...chatHistory, title]);
-        }
+        const title = await createTitle.json();
+        setTitle(title?.title);
+        setchatHistory([...chatHistory, title]);
       }
-    },
-    [input,
-    chatHistory,
-    title,
-      userChat,
-    resetTranscript]
-  );
+    }
+  }, [input, chatHistory, title, userChat, resetTranscript]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -354,7 +376,6 @@ const Chat = () => {
               />
 
               <div className=" absolute right-4 top-2 flex cursor-pointer">
-                
                 {/* RECORD, STOP Button */}
                 {/* Toggle Button */}
 
@@ -430,7 +451,6 @@ const Chat = () => {
             </small>
           </div>
         </div>
-
       </div>
     </div>
   );
