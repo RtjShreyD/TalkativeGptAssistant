@@ -1,0 +1,6 @@
+openai
+langchain
+jinja2
+python-dotenv
+PyPDF2
+tika
