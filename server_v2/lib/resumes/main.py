@@ -1,37 +1,12 @@
+from lib.OpenAI_Lib.main import *
+from helpers import *
+
 class Analyser:
-    def step1():
-        
-        import os
-        import openai
-        from langchain.llms import OpenAI
-        from dotenv import load_dotenv
-        from PyPDF2 import PdfReader
-        from langchain.embeddings.openai import OpenAIEmbeddings
-        from langchain.text_splitter import CharacterTextSplitter
-        from langchain.vectorstores import FAISS
-        from langchain.chains.question_answering import load_qa_chain
-        from typing_extensions import Concatenate
-        from tika import parser
-        from jinja2 import Template
+    def __init__(self, **kwargs):
+        self.model = kwargs.get('model_name')
+        pass
 
-        load_dotenv()
-
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-
-        def extract_text_from_document(file_path):
-            parsed = parser.from_file(file_path)
-            extracted_text = parsed["content"]
-            return extracted_text
-        
-        document_path = "Cristiano Filho - Resume.pdf"
-        extracted_text = extract_text_from_document(document_path)
-        if extracted_text:
-            extracted_text=extracted_text.strip()
-            resume_template=Template(extracted_text)
-            #print(resume_template.render())
-        else:
-            print("Text extraction failed.")
-
+    def evaluate_characterstics(jinja_templated_resume_text=""):
 
         # Get user input for the template fields
         position_title = input("Enter Position Title: ")
@@ -47,7 +22,7 @@ class Analyser:
         language_proficiencies = input("Enter Language Proficiencies (comma-separated): ")
 
         # Render the template with user inputs
-        filled_template = resume_template.render(
+        filled_template = jinja_templated_resume_text.render(
             position_title=position_title,
             duration=duration,
             industry=industry,
@@ -63,23 +38,17 @@ class Analyser:
 
         prompt = filled_template + "\n\n" + """Action- 
                 Generate a prompt based on the provided details to query from the provided resume, whether the profile is suitable or not. Return only JSON output. Json output should contain the following fields-
-                { is_shortlisted: True/False ,
-                  percentage_matching : string percentage value ,
-                  characterstics_matched : list of keywords matched
+                { 
+                    is_shortlisted: True/False ,
+                    percentage_matching : string percentage value ,
+                    characterstics_matched : list of keywords matched
                 }
 
                 -is_shortlisted should only tell TRUE only if the percentage_matching is greater than 60%.
-                -percentage_matching should be deduced on the basis of your prior experience in filtering resumes on the basis of certain characteristics. 
+                -percentage_matching should be deduced on the basis of your prior experience in filtering resumes on the basis of certain characteristics.
                 -characterstics_matched should be list of keywords which have matched in the resume."""
-        #print(prompt)
+        
+        response_from_prompt = fetch_response_from_openAI(prompt)
+        query_response=response_from_prompt.choices[0].text.strip()
 
-
-        response = openai.Completion.create(
-            engine="text-davinci-003",  # You can use other engines as well
-            prompt=prompt,
-            max_tokens=150,  # Adjust as needed
-            stop=None  # You can add stopping criteria if required
-        )
-
-        query=response.choices[0].text.strip()
-        print(query)
+        print(query_response)
