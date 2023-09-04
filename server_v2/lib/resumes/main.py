@@ -36,19 +36,12 @@ class Analyser:
             language_proficiencies=language_proficiencies
         )
 
-        prompt = filled_template + "\n\n" + """Action- 
-                Generate a prompt based on the provided details to query from the provided resume, whether the profile is suitable or not. Return only JSON output. Json output should contain the following fields-
-                { 
-                    is_shortlisted: True/False ,
-                    percentage_matching : string percentage value ,
-                    characterstics_matched : list of keywords matched
-                }
+        output_prompt_file_path = "server_v2/templates/resume/output/software_dev.txt"
+        output_prompt_text=parse_text_document(output_prompt_file_path)
 
-                -is_shortlisted should only tell TRUE only if the percentage_matching is greater than 60%.
-                -percentage_matching should be deduced on the basis of your prior experience in filtering resumes on the basis of certain characteristics.
-                -characterstics_matched should be list of keywords which have matched in the resume."""
+        prompt = filled_template + "\n" + output_prompt_text
         
-        response_from_prompt = fetch_response_from_openAI(prompt)
+        response_from_prompt = fetch_response_from_openAI(prompt=prompt)
         query_response=response_from_prompt.choices[0].text.strip()
 
         print(query_response)
