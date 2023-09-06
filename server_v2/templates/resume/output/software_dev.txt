@@ -1,0 +1,14 @@
+Action- 
+    Generate a response based on the provided details to query from the provided resume, whether the profile is suitable or not. 
+    Return only serializable python dictionary output. Dictionary output should contain the following fields-
+    { 
+        is_shortlisted: True/False ,
+        percentage_matching : string percentage value ,
+        characterstics_matched : list of keywords matched
+    }
+    
+    -is_shortlisted should only tell TRUE only if the percentage_matching is greater than 60%.
+    -percentage_matching should be deduced on the basis of your prior experience in filtering resumes on the basis of certain characteristics.
+    -characterstics_matched should be list of keywords which have matched in the resume.
+
+    NOTE- Do not return any extra text other than serializable python dictionary output.

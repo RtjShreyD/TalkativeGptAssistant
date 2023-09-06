@@ -1,0 +1,25 @@
+{
+"Experience":{
+"position_title" : "",
+"duration"  : "2",
+"industry" : "cs"
+},
+"Skills":{
+"primary_skills" : "backend",
+"secondary_skills" : "js"
+},
+"Education":{
+"degree" : "bachelors",
+"field_of_study" : "cs"
+},
+"Projects":{
+"project_keywords" : "web"
+},
+"Miscellaneous Keywords":{
+"Enter Additional Keywords" : ""
+},
+"Additional Filters":{
+"Enter Preferred Location" : "",
+"Enter Language/s" : "english"
+}
+}

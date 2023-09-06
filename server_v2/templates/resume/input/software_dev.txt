@@ -1,0 +1,24 @@
+Following is the query template for shortlisting this candidate.
+
+"""Experience:
+position_title : {}
+duration  : {}
+industry : {}
+
+Skills:
+primary_skills : {}
+secondary_skills : {}
+
+Education:
+degree : {}
+field_of_study : {}
+
+Projects:
+project_keywords : {}
+
+Miscellaneous Keywords:
+Enter Additional Keywords : {}
+
+Additional Filters:
+Enter Preferred Location : {}
+Enter Language/s : {} """
