@@ -49,9 +49,11 @@ class Analyser:
 
         response_from_prompt = fetch_response_from_openAI(prompt=query_prompt)
         query_response=response_from_prompt.choices[0].text.strip()
- 
-        #print(query_response)
-        extracted_variables = extract_variables_from_response(query_response)
+        splitted= query_response.split("\n")
+        print(splitted)
         
-        for key, value in extracted_variables.items():
-            print(f"{key}: {value}")
+        #print(query_response)
+        #extracted_variables = extract_variables_from_response(query_response)
+        
+        #for key, value in extracted_variables.items():
+        #    print(f"{key}: {value}")
