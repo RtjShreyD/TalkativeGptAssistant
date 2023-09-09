@@ -38,7 +38,7 @@ class Analyser:
                 location_preference=location_preference,
                 language_proficiencies=language_proficiencies
             )
-
+            
         if (method.lower()=="json"):
             filled_template = jinja_templated_resume_text.render(json_format_string)
 
@@ -49,6 +49,7 @@ class Analyser:
 
         response_from_prompt = fetch_response_from_openAI(prompt=query_prompt)
         query_response=response_from_prompt.choices[0].text.strip()
+
         splitted= query_response.split("\n")
         print(splitted)
         

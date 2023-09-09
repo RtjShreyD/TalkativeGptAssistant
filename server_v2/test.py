@@ -19,8 +19,7 @@ from lib.resumes.main import *
 document_path = "server_v2/media/resumes/Cristiano Filho - Resume.pdf"
 resume_template=templating_to_jinja(document_path)
 
-json_input=parse_json_document("server_v2/media/resumes/user_input.json")
+json_input=parse_json_document("server_v2/media/resume_input_characterstics.json")
 
 resume_instance = Analyser
 resume_instance.evaluate_characterstics(jinja_templated_resume_text=resume_template, method="json", json_format_string=json_input)
-
