@@ -67,6 +67,58 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
+app.use(express.json()); // Middleware to parse JSON requests
+
+app.post("/api/call", async (req, res) => {
+  try {
+    console.log("hello");
+    console.log("Received request with body:", req.body); 
+    // console.log("Received request with prompt:",req.body.voiceInput);
+
+    // const content  = "how are you";
+    const content = req.body.messages[0].content;
+    console.log("content value is : ",content)
+    console.log("hello");
+    // Define the conversation as an array of message objects
+    const messages = [
+      { role: "system", content: "You are a creative, funny, friendly and amusing AI assistant named Joanna. Please provide engaging but concise responses." },
+      { role: "user", content: content },
+    ];
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo", // Choose the appropriate model
+        messages: messages, // Pass the conversation as messages
+        max_tokens: 100, // Adjust as needed
+        temperature: 0.7, // Adjust the temperature as needed
+        n:1,
+      }),
+    });
+  // console.log(completion.choices[0].message)
+    const data = await response.json();
+    console.log(data);
+    console.log(data.choices[0].message)
+    const generatedResponse = data?.choices?.[0]?.message;
+    console.log(generatedResponse)
+
+
+    // Send the generated response to respond.js
+    // You can define your logic here to send it to respond.js as needed
+
+    res.status(200).json({ response: generatedResponse });
+  } catch (error) {
+    console.error("Error in generating response:", error);
+    res.status(500).json({ error: "Error in generating response" });
+  }
+});
+
+
+
 app.post("/api/title", async (req, res) => {
   try {
     const { title } = req.body;
@@ -93,6 +145,9 @@ app.post("/api/title", async (req, res) => {
     res.status(500).json({ error: "Error in getting Title" });
   }
 });
+
+
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
