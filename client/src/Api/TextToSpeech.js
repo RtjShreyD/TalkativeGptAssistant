@@ -30,7 +30,7 @@ const TextToSpeech = async (aiRes) => {
 
     const audioData = await response.arrayBuffer();
 
-    console.log("Text to speech");
+    // console.log("Text to speech");
 
     // Return the binary audio data received from the API response.
     // console.log(audioData);

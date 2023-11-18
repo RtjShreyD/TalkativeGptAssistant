@@ -68,39 +68,60 @@ const Chat = () => {
     // resetTranscript(); // clear the text in microphone after recording is done
   }, [transcript]);
 
-  const handleSend = useCallback(
-    async () => {
-      if (input.trim()) {
-        setChat([...userChat, { role: "user", content: input }]);
-        setInput("");
-        resetTranscript();
-        const response = await fetch("http://localhost:8000/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              ...userChat,
-              {
-                role: "user",
-                content: input,
-              },
-            ],
-          }),
-        });
+  const handleSend = useCallback(async () => {
+    if (input.trim()) {
+      setChat([...userChat, { role: "user", content: input }]);
+      setInput("");
+      resetTranscript();
+      // console.log(input);
+      const response = await fetch("http://localhost:8000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            ...userChat,
+            {
+              role: "user",
+              content: input,
+            },
+          ],
+        }),
 
-        // Show typing effect while waiting for the audio URL
-        setChat([
-          ...userChat,
-          { role: "user", content: input },
-          { role: "assistant", content: "Loading..." },
-        ]);
+      });
 
-        const readData = response.body
-          .pipeThrough(new TextDecoderStream())
-          .getReader();
-        let aiRes = "";
+      // Get the audio URL from AudioPlayer
+      let def = new Audio(preDef);
+      // Play the default audio in a loop
+      let fetchComplete = false;
+
+      // Function to play the default audio in a loop with a delay
+      function playDefaultAudioLoop() {
+        def.currentTime = 0;
+        def.play();
+        setTimeout(() => {
+          if (!fetchComplete) {
+            playDefaultAudioLoop();
+          }
+        }, 5000); // 2 seconds
+      }
+
+      // Play the default audio loop
+      playDefaultAudioLoop();
+      // Show typing effect while waiting for the audio URL
+      // console.log(input);
+      setChat([
+        ...userChat,
+        { role: "user", content: input },
+        { role: "assistant", content: "Loading..." },
+      ]);
+      
+      console.log(input);
+      const readData = response.body
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
+      let aiRes = "";
 
         console.log(readData);
 

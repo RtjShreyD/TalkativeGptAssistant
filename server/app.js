@@ -13,62 +13,100 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.post("/api/chat", async (req, res) => {
+let session_id = ''
+
+app.post(`/api/chat`, async (req, res) => {
+
+  // if(window.reload)
+
+  // let session_id = req.session_id;
+
   const { messages } = req.body;
-  console.log(req.body);
-  const data = {
-    model: "gpt-3.5-turbo",
-    stream: true,
-    messages: [
-      {
-        role: "system",
-        content: "You are a helpful assistant.",
-      },
-      ...messages,
-    ],
-  };
+
+  if (!session_id) {
+    // Make an HTTP POST request to initialize the resource
+    // Set up the necessary headers
+    const headers = {
+      accept: "application/json",
+      Authorization: `Bearer ${process.env.MED_AUTH_TOKEN}`, // Replace with your actual token
+      "Content-Type": "application/json",
+    };
+
+    // Define the request payload for initialization
+    const initializeRequest = {
+      session_id: "",
+    };
+
+    // Make an HTTP POST request to initialize the resource
+    try {
+      const initializeResponse = await fetch(
+        "https://medagentv1.excelus.ai/initialise",
+        {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(initializeRequest),
+        }
+      );
+
+      if (initializeResponse.ok) {
+        const initializeData = await initializeResponse.json();
+        session_id = initializeData.details.session_id;
+        agent_msg = initializeData.details.agent_response;
+        console.log("Initialization successful. Session ID:", session_id);
+        console.log("Agent_welcome_message:", agent_msg);
+      } else {
+        console.error(
+          "Initialization request failed:",
+          initializeResponse.status,
+          initializeResponse.statusText
+        );
+        res.send("Initialization request failed");
+      }
+    } catch (error) {
+      console.error("Error during initialization request:", error);
+      res.send("Error during initialization request");
+    }
+
+  }
+
+  const userInp = messages[messages.length - 1].content; // Assuming user input is in the last message
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const chatResponse = await fetch("https://medagentv1.excelus.ai/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.MED_AUTH_TOKEN}`, // Replace with your actual token
       },
       body: JSON.stringify({
-        ...data,
-        messages: [...data.messages, ...messages],
+        session_id: session_id, // Replace with your session ID logic
+        human_message: userInp,
       }),
     });
 
-    
-    response.body.on("data", (data) => {
-      const lines = data
-        .toString()
-        .split("\n")
-        .filter((line) => line.trim() !== "");
-      for (const line of lines) {
-        const message = line.replace(/^data: /, "");
-        console.log(message, "message");
+    if (!chatResponse.ok) {
+      console.error(
+        "Error from chat endpoint:",
+        chatResponse.status,
+        chatResponse.statusText
+      );
+      return res.status(500).json({ error: "Error from chat endpoint" });
+    }
 
-        if (message === '[DONE]') {
-          return res.end();
-        }
+    const chatData = await chatResponse.json();
+    console.log(chatData);
 
+    // Extract the agent's response from chatData
+    const agentResponse = chatData.details.agent_response;
+    console.log(agentResponse);
 
-
-        const { choices } = JSON.parse(message);
-        const { content } = choices[choices.length - 1].delta || {};
-
-        if (content) {
-          res.write(content);
-        }
-
-      }
-    });
+    res.send(agentResponse);
   } catch (error) {
-    console.log(error.message, "error");
+    console.error("Error making chat API request:", error);
+    res.status(500).json({ error: "Error making chat API request" });
   }
+
+
 });
 
 app.post("/api/title", async (req, res) => {
