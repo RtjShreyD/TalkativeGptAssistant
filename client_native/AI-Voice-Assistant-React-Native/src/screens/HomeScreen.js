@@ -16,6 +16,8 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import axios from 'axios';
 import Voice from '@react-native-community/voice';
 import Tts from 'react-native-tts';
+import AgentScreen from './AgentScreen';
+import { useNavigation } from '@react-navigation/native';
 const MED_AUTH_TOKEN =process.env.MED_AUTH_TOKEN;
 
 const HomeScreen = () => {
@@ -25,6 +27,7 @@ const HomeScreen = () => {
   const [recording, setRecording] = useState(false);
   const [loading, setLoading] = useState(true);
   const ScrollViewRef = useRef();
+  const navigation = useNavigation();
 
   const speechStartHandler = (e) => {
     console.log('speech start handler', e);
@@ -231,17 +234,22 @@ const HomeScreen = () => {
           />
           <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
             <Image
-              source={
-                recording
-                  ? require('../../assets/microphoneloading.png')
-                  : require('../../assets/microphone.png')
-              }
+              source={recording
+                 ? require('../../assets/voiceload.png') 
+                 : require('../../assets/voiceicon.png')}
+
               style={styles.iconImage}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={send}>
-            <Image source={require('../../assets/send.png')} style={styles.iconImage} />
+            <Image source={require('../../assets/sendbutton.png')} style={styles.iconImage} />
           </TouchableOpacity>
+        </View>
+        <View style={styles.agentIconContainer}>
+           <TouchableOpacity
+           onPress={() => navigation.navigate(AgentScreen)}>
+               <Image source={require('../../assets/agenticon.png')} style={styles.agentIconImage} />
+            </TouchableOpacity>
         </View>
         </>
         )}
@@ -302,12 +310,13 @@ const styles = StyleSheet.create({
     color:'#fff'
   },
   inputBox: {
-    flexDirection: 'row',
+    // flex: 1,
     backgroundColor: 'white',
     borderRadius: 8,
     padding: 10,
     alignItems: 'center',
-    position: 'relative',
+    flexDirection: 'row', 
+    marginRight: 10,
   },
   textInput: {
     flex: 1,
@@ -322,6 +331,22 @@ const styles = StyleSheet.create({
     height: hp(3),
     width: hp(3),
     marginRight: 5,
+  },
+   agentIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white', 
+    borderRadius: 50,
+    height: hp(5),
+    width: hp(6), 
+    position: 'absolute',
+    bottom: 80, 
+    right: 10, 
+  },
+
+  agentIconImage: {
+    height: hp(4),
+    width: hp(4), 
   },
   loadingContainer: {
     flex: 1,
